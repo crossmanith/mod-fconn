@@ -1,0 +1,103 @@
+#-----------------------------------------------------------------------------
+# File    : makefile-oct
+# Contents: build objects for use with octave/mex
+# Author  : Kristian Loewe (with modifications for octave by Christina Rossmanith)
+#-----------------------------------------------------------------------------
+.SUFFIXES:                                   # remove built-in rules
+MAKEFLAGS   += -r
+
+CORRDIR     = ../../corr
+CPUINFODIR  = ../../cpuinfo
+DOTDIR      = ../../dot
+STATSDIR    = ../../stats
+
+CFLAGS      = -std=c99 \
+              -Wall -Wextra -Wno-unused-parameter -Wconversion -Wshadow \
+              -pedantic -fPIC
+COPTIMFLAGS = -O2 -funroll-loops
+
+MEXCC       = mkoctfile --mex -DMATLAB_MEX_FILE
+
+OBJDIR      = ../obj/$(shell uname -m)/octave
+_DUMMY      := $(shell mkdir -p $(OBJDIR); mkdir -p $(OBJDIR))
+
+#-----------------------------------------------------------------------------
+# Build Objects
+#-----------------------------------------------------------------------------
+all: fcmat_flt.o matrix_flt.o edgestats_flt.o nodedeg_flt.o \
+     fcmat_dbl.o matrix_dbl.o edgestats_dbl.o nodedeg_dbl.o
+
+fcmat_flt.o:               $(OBJDIR)/fcmat_flt.o
+$(OBJDIR)/fcmat_flt.o:     fcmat.h fcmat1.h fcmat2.h fcmat3.h \
+                             $(CORRDIR)/src/pcc.h \
+                             $(CORRDIR)/src/tetracc.h \
+                             $(CORRDIR)/src/binarize.h \
+                             $(CPUINFODIR)/src/cpuinfo.h \
+                             $(STATSDIR)/src/stats.h
+$(OBJDIR)/fcmat_flt.o:     fcmat.c makefile-oct
+	CFLAGS='$(CFLAGS) $(COPTIMFLAGS)' $(MEXCC) \
+    -DNDEBUG -DREAL=float -DPAIRSPLIT -DRECTGRID -DSAFETHREAD \
+    -I$(CORRDIR)/src -I$(CPUINFODIR)/src -I$(STATSDIR)/src \
+    -c $< -o $@
+
+matrix_flt.o:              $(OBJDIR)/matrix_flt.o
+$(OBJDIR)/matrix_flt.o:    matrix.h
+$(OBJDIR)/matrix_flt.o:    matrix.c makefile-oct
+	CFLAGS='$(CFLAGS) $(COPTIMFLAGS)' $(MEXCC) \
+    -DNDEBUG -DREAL=float -c $< -o $@
+
+edgestats_flt.o:           $(OBJDIR)/edgestats_flt.o
+$(OBJDIR)/edgestats_flt.o: edgestats.h fcmat.h matrix.h \
+                             $(CPUINFODIR)/src/cpuinfo.h \
+                             $(DOTDIR)/src/dot.h \
+                             $(STATSDIR)/src/stats.h
+$(OBJDIR)/edgestats_flt.o: edgestats.c makefile-oct
+	CFLAGS='$(CFLAGS) $(COPTIMFLAGS)' $(MEXCC) \
+    -DNDEBUG -DREAL=float \
+    -I$(CPUINFODIR)/src -I$(DOTDIR)/src -I$(STATSDIR)/src \
+    -c $< -o $@
+
+nodedeg_flt.o:             $(OBJDIR)/nodedeg_flt.o
+$(OBJDIR)/nodedeg_flt.o:   nodedeg.h fcmat.h \
+                             $(CPUINFODIR)/src/cpuinfo.h
+$(OBJDIR)/nodedeg_flt.o:   nodedeg.c makefile-oct
+	CFLAGS='$(CFLAGS) $(COPTIMFLAGS)' $(MEXCC) \
+    -DNDEBUG -DREAL=float \
+    -I$(CPUINFODIR)/src -c $< -o $@
+
+fcmat_dbl.o:               $(OBJDIR)/fcmat_dbl.o
+$(OBJDIR)/fcmat_dbl.o:     fcmat.h fcmat1.h fcmat2.h fcmat3.h \
+                             $(CORRDIR)/src/pcc.h \
+                             $(CORRDIR)/src/tetracc.h \
+                             $(CORRDIR)/src/binarize.h \
+                             $(CPUINFODIR)/src/cpuinfo.h \
+                             $(STATSDIR)/src/stats.h
+$(OBJDIR)/fcmat_dbl.o:     fcmat.c makefile-oct
+	CFLAGS='$(CFLAGS) $(COPTIMFLAGS)' $(MEXCC) \
+    -DNDEBUG -DREAL=double -DPAIRSPLIT -DRECTGRID -DSAFETHREAD \
+    -I$(CORRDIR)/src -I$(CPUINFODIR)/src -I$(STATSDIR)/src \
+    -c $< -o $@
+
+matrix_dbl.o:              $(OBJDIR)/matrix_dbl.o
+$(OBJDIR)/matrix_dbl.o:    matrix.h
+$(OBJDIR)/matrix_dbl.o:    matrix.c makefile-oct
+	CFLAGS='$(CFLAGS) $(COPTIMFLAGS)' $(MEXCC) \
+    -DNDEBUG -DREAL=double -c $< -o $@
+
+edgestats_dbl.o:           $(OBJDIR)/edgestats_dbl.o
+$(OBJDIR)/edgestats_dbl.o: edgestats.h fcmat.h matrix.h \
+                             $(CPUINFODIR)/src/cpuinfo.h \
+                             $(DOTDIR)/src/dot.h \
+                             $(STATSDIR)/src/stats.h
+$(OBJDIR)/edgestats_dbl.o: edgestats.c makefile-oct
+	CFLAGS='$(CFLAGS) $(COPTIMFLAGS)' $(MEXCC) \
+    -DNDEBUG -DREAL=double \
+    -I$(CPUINFODIR)/src -I$(DOTDIR)/src -I$(STATSDIR)/src \
+    -c $< -o $@
+
+nodedeg_dbl.o:             $(OBJDIR)/nodedeg_dbl.o
+$(OBJDIR)/nodedeg_dbl.o:   nodedeg.h fcmat.h \
+                             $(CPUINFODIR)/src/cpuinfo.h
+$(OBJDIR)/nodedeg_dbl.o:   nodedeg.c makefile-oct
+	CFLAGS='$(CFLAGS) $(COPTIMFLAGS)' $(MEXCC) \
+    -DNDEBUG -DREAL=double -I$(CPUINFODIR)/src -c $< -o $@
